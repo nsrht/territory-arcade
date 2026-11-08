@@ -1,0 +1,18 @@
+# Dependencies
+node_modules/
+
+# Production build artifacts
+dist/
+
+# Test coverage
+coverage/
+
+# Log files
+*.log
+npm-debug.log*
+
+# OS / Editor temporary files
+.DS_Store
+Thumbs.db
+.vscode/
+.idea/
