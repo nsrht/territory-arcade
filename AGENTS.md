@@ -16,7 +16,8 @@ This file documents the conventions, architectural structure, scope boundaries, 
 │   ├── style.css           # Full-screen styles and non-blocking HUD styles
 │   └── __tests__/          # Vitest unit tests
 │       ├── input.test.ts   # Input handling and blur reset tests
-│       └── movement.test.ts# Vector normalization and boundary clamping tests
+│       ├── movement.test.ts# Vector normalization and boundary clamping tests
+│       └── game.test.ts    # Game loop lifecycle, HUD DOM optimization & resize tests
 ├── tsconfig.json           # Strict TypeScript configuration
 ├── vite.config.ts          # Vite & Vitest configuration
 └── package.json            # Scripts and dependencies

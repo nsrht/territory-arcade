@@ -32,18 +32,6 @@ export function calculateDisplacement(
 }
 
 /**
- * Clamps a 1D position within [min, max].
- * If min > max (e.g., viewport dimension is smaller than player diameter),
- * returns the midpoint (max / 2) to safely center the player.
- */
-export function clampDimension(val: number, min: number, max: number): number {
-  if (min > max) {
-    return (min + max - min) / 2; // (max) / 2 when min = radius and max = width - radius => width / 2
-  }
-  return Math.min(Math.max(val, min), max);
-}
-
-/**
  * Clamps player coordinates within viewport boundaries, ensuring the entire
  * circular perimeter stays inside.
  *

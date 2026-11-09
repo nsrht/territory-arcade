@@ -30,7 +30,12 @@ export class Game {
   private lastFpsUpdateTime: number = 0;
   private currentFps: number = 0;
 
+  // Cached coordinates to prevent redundant DOM writes
+  private lastDisplayedX: number | null = null;
+  private lastDisplayedY: number | null = null;
+
   private onResizeBound: () => void;
+  private loopBound: (timestamp: number) => void;
 
   constructor(elements: GameElements, config: Partial<GameConfig> = {}) {
     this.config = { ...DEFAULT_CONFIG, ...config };
@@ -59,6 +64,8 @@ export class Game {
     this.input = new InputHandler();
 
     this.onResizeBound = this.handleResize.bind(this);
+    this.loopBound = this.loop.bind(this);
+
     window.addEventListener('resize', this.onResizeBound);
 
     this.handleResize();
@@ -86,17 +93,17 @@ export class Game {
     this.player.y = clamped.y;
 
     this.renderer.resize(this.viewport);
-    this.updateCoordsDisplay();
+    this.updateCoordsDisplay(true);
   }
 
   public start(): void {
     if (this.isRunning) return;
     this.isRunning = true;
-    this.lastTimestamp = performance.now();
-    this.lastFpsUpdateTime = this.lastTimestamp;
+    this.lastTimestamp = 0; // Reset timestamp so the first frame computes dt = 0
+    this.lastFpsUpdateTime = performance.now();
     this.frameCount = 0;
 
-    this.loop(this.lastTimestamp);
+    this.animationFrameId = requestAnimationFrame(this.loopBound);
   }
 
   public stop(): void {
@@ -116,8 +123,9 @@ export class Game {
   private loop(timestamp: number): void {
     if (!this.isRunning) return;
 
-    // Delta time calculation in seconds
-    const rawDelta = (timestamp - this.lastTimestamp) / 1000;
+    // Delta time calculation in seconds.
+    // If lastTimestamp is 0 (first frame or after restart), dt is 0 to avoid spikes.
+    const rawDelta = this.lastTimestamp === 0 ? 0 : (timestamp - this.lastTimestamp) / 1000;
     this.lastTimestamp = timestamp;
 
     // Clamp delta time to avoid large jumps (e.g. after tab blur/focus)
@@ -136,7 +144,7 @@ export class Game {
     // Update player coordinates display
     this.updateCoordsDisplay();
 
-    this.animationFrameId = requestAnimationFrame(this.loop.bind(this));
+    this.animationFrameId = requestAnimationFrame(this.loopBound);
   }
 
   private updateFps(timestamp: number): void {
@@ -151,8 +159,15 @@ export class Game {
     }
   }
 
-  private updateCoordsDisplay(): void {
-    this.coordsDisplay.textContent = `X: ${Math.round(this.player.x)} | Y: ${Math.round(this.player.y)}`;
+  private updateCoordsDisplay(force: boolean = false): void {
+    const roundedX = Math.round(this.player.x);
+    const roundedY = Math.round(this.player.y);
+
+    if (force || roundedX !== this.lastDisplayedX || roundedY !== this.lastDisplayedY) {
+      this.lastDisplayedX = roundedX;
+      this.lastDisplayedY = roundedY;
+      this.coordsDisplay.textContent = `X: ${roundedX} | Y: ${roundedY}`;
+    }
   }
 
   // Getters for testing/inspection if needed
